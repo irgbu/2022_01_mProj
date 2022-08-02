@@ -44,10 +44,10 @@ for i = 1:100
     tempCoordinate = coordinate(i, :) + 0.1 * velocity(i, :) + (1/2) * 0.01 * acceleration(i, :); %r(t+dt)
     for j = 2:10
         distance(j) = tempCoordinate(j) - tempCoordinate(j-1);
-    end % 원자간 거리 초기화
+    end % distance reset
     for j = 1:10 
         tempAcceleration(j) = k * ((distance(j+1)-a)-(distance(j)-a)) / m; %a(t+dt)
-    end % 가속도 초기화
+    end % acceleration reset
     tempVelocity = velocity(i, :) + (1/2) * 0.1 * (acceleration(i, :) + tempAcceleration); %v(t+dt)
     coordinate = [coordinate;tempCoordinate]; %r(t+dt) > r(t)
     velocity = [velocity;tempVelocity]; %v(t+dt) > v(t)
