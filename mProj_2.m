@@ -1,14 +1,15 @@
 % 1D Mass-Spring system with real values
 % Made by Shin, KiBeom [irgbu1209@yonsei.ac.kr]
 
-m = 39.948;  % Mass of atom per mol             g/mol
-N = 10;      % Number of atom
-k = 0.0509;  % Spring constat                   eV/Angstrom^2
-a = 3.822;   % Distance of atoms                Angstrom
-dt = 10;     % Time                             ps
-T = 300;     % Tempeture                        K
-k_B = 8.617333262*10^(-5); % Boltzman constant  eV/K
-v = sqrt(k_B * T / m);     % Speed              (eV*mol/g)^(1/2)
+m = 39.948;         % Mass of atom         
+N = 10;        % Number of atom
+k = 0.0509;         % Spring constat                  
+a = 3.822;         % Distance of atoms                
+dt = 0.1;      % Time                             
+T = 300;       % Tempeture       
+turn = 1000;   % Calcualated time
+k_B = 8.617333262*10^(-5); % Boltzman constant  
+v = sqrt(k_B * T / m);     % Speed              
 
 % Set direction of each atom
 direction = zeros(1, 10);
@@ -31,20 +32,20 @@ for i = 1:10
 end
 
 % Initial condition
-coordi = zeros(101, N);
-velo = zeros(101, N);
-E_kin = zeros(101, 1);
-E_pot = zeros(101, 1);
-E_tot = zeros(101, 1);
+coordi = zeros(turn+1, N);
+velo = zeros(turn+1, N);
+E_kin = zeros(turn+1, 1);
+E_pot = zeros(turn+1, 1);
+E_tot = zeros(turn+1, 1);
 
-coordi(1, :) = a * (1:N);                % Angstrom
-distance = a * ones(1, 11);              % Angstrom
-velo(1, :) = v * direction;              % (eV*mol/g)^(1/2)
-accel = k * diff(distance) / m;          % eV*mol/g*Angstrom
-E_kin(1, :) = 10 * m * v^2 /2;           % eV
-E_tot(1, :) = E_kin(1, :) + E_pot(1, :); % eV
+coordi(1, :) = a * (1:N);                
+distance = a * ones(1, 11);              
+velo(1, :) = v * direction;              
+accel = k * diff(distance) / m;          
+E_kin(1, :) = 10 * m * v^2 /2;         
+E_tot(1, :) = E_kin(1, :) + E_pot(1, :);
 
-for i = 1:100
+for i = 1:turn
     tempCoordi = coordi(i, :) + velo(i, :) * dt + dt^2 * accel / 2;
     distance = [a diff(tempCoordi) a];
     tempAccel = k * diff(distance) / m;
@@ -54,14 +55,14 @@ for i = 1:100
     velo(i+1, :) = tempVelo;
     accel = tempAccel;
 
-    E_kin(i+1, :) = sum(velo(i+1, :).^2)*m/2;
+    E_kin(i+1, :) = sum(tempVelo.^2)*m/2;
     E_pot(i+1, :) = k*sum((distance-a).^2)/2;
     E_tot(i+1, :) = E_kin(i+1)+E_pot(i+1);
 end
 
 % Visualization
 energy = [E_kin E_pot E_tot];
-t = 0:dt:100*dt;
+t = 0:dt:turn*dt;
 
 figure(1)  % Position & Velocity
 subplot(2, 1, 1)
