@@ -1,34 +1,21 @@
 % 1D Mass-Spring system with real values
 % Made by Shin, KiBeom [irgbu1209@yonsei.ac.kr]
 
-m = 39.948;         % Mass of atom         
-N = 10;        % Number of atom
-k = 0.0509;         % Spring constat                  
-a = 3.822;         % Distance of atoms                
-dt = 0.1;      % Time                             
-T = 300;       % Tempeture       
-turn = 1000;   % Calcualated time
+m = 39.948;                % Mass of atom         
+N = 10;                    % Number of atom
+k = 0.0509;                % Spring constat                  
+a = 3.822;                 % Distance of atoms                
+dt = 0.01;                 % Time                             
+T = 300;                   % Tempeture       
+turn = 10000;              % Calcualated time
 k_B = 8.617333262*10^(-5); % Boltzman constant  
 v = sqrt(k_B * T / m);     % Speed              
 
 % Set direction of each atom
-direction = zeros(1, 10);
-for i = 1:10
-    r = randi([0 1]);
-    if i > 5
-        if sum(direction) == 5
-            r = 0;
-        end
-        if sum(direction) + 10 - i < 5
-            r = 1;
-        end
-    end
-    direction(i) = r;
-end
-for i = 1:10
-    if direction(i) == 0
-        direction(i) = -1;
-    end
+direction = ones(1, 10);
+directionCache = randperm(N, N/2);
+for i = 1:N/2
+    direction(directionCache(i)) = -1;
 end
 
 % Initial condition
