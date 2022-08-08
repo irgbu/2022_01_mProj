@@ -52,6 +52,7 @@ for i = 1:100
     
     coordi(i+1, :) = tempCoordi;
     velo(i+1, :) = tempVelo;
+    accel = tempAccel;
 
     E_kin(i+1, :) = sum(velo(i+1, :).^2)*m/2;
     E_pot(i+1, :) = k*sum((distance-a).^2)/2;
