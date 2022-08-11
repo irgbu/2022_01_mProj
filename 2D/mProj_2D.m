@@ -9,7 +9,7 @@ dt = 1;                 % Time
 T = 600;                   % Tempeture       
 turn = 1000;                        % Calcualated time
 k_B = 8.617333262*10^(-5);          % Boltzman constant  
-v = sqrt(k_B * T / m);       % Speed     
+v = sqrt(k_B * T / m);              % Speed     
 
 % Set position of each atom
 xPos = zeros(turn+1, 100);
@@ -21,41 +21,36 @@ for i = 0:9
     end
 end
 
-% Set direction of each atom
-xDirection = ones(turn+1, 100);
-xDirectCache = randperm(100, 50);
-for i = 1:50
-    xDirection(1, xDirectCache(i)) = -1;
-end
+% Set velocity of each atom
+xVeloSeed = randn(1, 100);
+xInitVelo = xVeloSeed - mean(xVeloSeed);
+xInitVelo = xInitVelo * sqrt(100*k_B*T/m) / sqrt(sum(xInitVelo.^2));
+xVelocity = zeros(turn+1, 100); xVelocity(1, :) = xInitVelo;
 
-yDirection = ones(turn+1, 100);
-yDirectCache = randperm(100, 50);
-for i = 1:50
-    yDirection(1, yDirectCache(i)) = -1;
-end
+yVeloSeed = randn(1, 100);
+yInitVelo = yVeloSeed - mean(yVeloSeed);
+yInitVelo = yInitVelo * sqrt(100*k_B*T/m) / sqrt(sum(yInitVelo.^2));
+yVelocity = zeros(turn+1, 100); yVelocity(1, :) = yInitVelo;
 
-xVelocity = v * xDirection;
-yVelocity = v * yDirection;
-
-xAcceleration = zeros(turn+1, 100);
-yAcceleration = zeros(turn+1, 100);
+xAcceleration = zeros(10);
+yAcceleration = zeros(10);
 
 % Main
 for nTime = 1:turn
-    for i = 0:9
-        for j = 1:10
+    for i = 0:9         % 10
+        for j = 1:10    %  1
             % 1 - left, 2 - right, 3 - down, 4 - up
             r1 = a; r2 = a; r3 = a; r4 = a;
+            a1 = 0; a2 = 0; a3 = 0; a4 = 0;
             dx1 = 0; dx2 = 0; dx3 = 0; dx4 = 0;
             dy1 = 0; dy2 = 0; dy3 = 0; dy4 = 0;
-            a1 = 0; a2 = 0; a3 = 0; a4 = 0;
 
             x = xPos(nTime, 10*i+j);
             y = yPos(nTime, 10*i+j);
             xVelo = xVelocity(nTime, 10*i+j);
             yVelo = yVelocity(nTime, 10*i+j);
-            xAccel = xAcceleration(nTime, 10*i+j);
-            yAccel = yAcceleration(nTime, 10*i+j);
+            xAccel = xAcceleration(i+1, j);
+            yAccel = yAcceleration(i+1, j);
 
             xPos(nTime+1, 10*i+j) = x + dt*xVelo + xAccel*dt^2/2;
             yPos(nTime+1, 10*i+j) = y + dt*yVelo + yAccel*dt^2/2;
@@ -91,14 +86,12 @@ for nTime = 1:turn
             xVelocity(nTime+1, 10*i+j) = xVelo + (xAccel+xAccelCache)*dt/2;
             yVelocity(nTime+1, 10*i+j) = yVelo + (yAccel+yAccelCache)*dt/2;
 
-            xAcceleration(nTime+1, 10*i+j) = xAccelCache;
-            yAcceleration(nTime+1, 10*i+j) = yAccelCache;
+            xAcceleration(i+1, j) = xAccelCache;
+            yAcceleration(i+1, j) = yAccelCache;
         end
     end
     scatter(xPos(nTime, :), yPos(nTime, :))
     drawnow
     frame = getframe(figure(1));
-    im{nTime} = frame2im(frame); 
+    im{nTime} = frame2im(frame);
 end
-
-close(figure(1));
