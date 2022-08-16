@@ -5,7 +5,7 @@ m = 39.948;                % Mass of atom
 N = 10;                    % Number of atom
 k = 0.0509;                % Spring constat                  
 a = 3.822;                 % Distance of atoms                
-dt = 0.1;                  % Time                             
+dt = 1;                  % Time                             
 T = 600;                   % Tempeture       
 turn = 1000;                        % Calcualated time
 k_B = 8.617333262*10^(-5);          % Boltzman constant  
@@ -36,6 +36,9 @@ for i = 1:N^2
     dx = xPos(1, i) - xMeanPos(1);
     dy = yPos(1, i) - yMeanPos(1);
     r = sqrt(dx^2 + dy^2);
+    if r == 0
+        continue
+    end
     totTq = totTq + r *(yInitVelo(i)*dx/r - xInitVelo(i)*dy/r);
 end
 tq = totTq / N^2;
@@ -43,16 +46,22 @@ for i = 1:N^2
     dx = xPos(1, i) - xMeanPos(1);
     dy = yPos(1, i) - yMeanPos(1);
     r = sqrt(dx^2 + dy^2);
+    if r == 0
+        continue
+    end
     xInitVelo(i) = xInitVelo(i) + tq * dy / r^2;
     yInitVelo(i) = yInitVelo(i) - tq * dx / r^2;
 end
 
-totTq = 0;
+totTq = 0; % for torque debugging
 for i = 1:N^2
     dx = xPos(1, i) - xMeanPos(1);
     dy = yPos(1, i) - yMeanPos(1);
+    if r == 0
+        continue
+    end
     r = sqrt(dx^2 + dy^2);
-    totTq = totTq + r *(yInitVelo(i)*dx/r - xInitVelo(i)*dy/r);
+    totTq = totTq + r * (yInitVelo(i)*dx/r - xInitVelo(i)*dy/r);
 end
 
 xInitVelo = xInitVelo * sqrt((N^2-1)*k_B*T/m) / sqrt(sum(xInitVelo.^2));
@@ -130,6 +139,12 @@ for nTime = 1:turn
             tempE_pot = tempE_pot + k * sum(([r1 r2 r3 r4]-a).^2) / 4;
         end
     end
+
+    %xPos(nTime+1, 1) = xPos(1, 1);     yPos(nTime+1, 1) = yPos(1, 1);
+    %xPos(nTime+1, 10) = xPos(1, 10);   yPos(nTime+1, 10) = yPos(1, 10);
+    %xPos(nTime+1, 91) = xPos(1, 91);   yPos(nTime+1, 91) = yPos(1, 91);
+    %xPos(nTime+1, 100) = xPos(1, 100); yPos(nTime+1, 100) = yPos(1, 100);
+
     E_kin(nTime+1, :) = m * (sum(xVelocity(nTime+1, :).^2) + sum(yVelocity(nTime+1, :).^2)) / 2;
     E_pot(nTime+1, :) = tempE_pot;
 
