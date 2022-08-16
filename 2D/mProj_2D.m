@@ -2,7 +2,7 @@
 % Written by Shin, KiBeom [irgbu1209@yonsei.ac.kr]
 
 m = 39.948;                % Mass of atom         
-N = 10;                    % Number of atom
+N = 5;                    % Number of atom
 k = 0.0509;                % Spring constat                  
 a = 3.822;                 % Distance of atoms                
 dt = 1;                  % Time                             
@@ -84,45 +84,55 @@ for nTime = 1:turn
     tempE_pot = 0;
     for i = 0:N-1      % 10
         for j = 1:N    %  1
+            x = xPos(nTime, N*i+j);
+            y = yPos(nTime, N*i+j);
+
+            xVelo = xVelocity(nTime, N*i+j);
+            yVelo = yVelocity(nTime, N*i+j);
+            xAccel = xAcceleration(i+1, j);
+            yAccel = yAcceleration(i+1, j);
+
+            xPos(nTime+1, N*i+j) = x + dt*xVelo + xAccel*dt^2/2;
+            yPos(nTime+1, N*i+j) = y + dt*yVelo + yAccel*dt^2/2;
+        end
+    end
+    for i = 0:N-1
+        for j = 1:N
             % 1 - left, 2 - right, 3 - down, 4 - up
             r1 = a; r2 = a; r3 = a; r4 = a;
             a1 = 0; a2 = 0; a3 = 0; a4 = 0;
             dx1 = 0; dx2 = 0; dx3 = 0; dx4 = 0;
             dy1 = 0; dy2 = 0; dy3 = 0; dy4 = 0;
 
-            x = xPos(nTime, N*i+j);
-            y = yPos(nTime, N*i+j);
-
             xVelo = xVelocity(nTime, N*i+j);
             yVelo = yVelocity(nTime, N*i+j);
-            
             xAccel = xAcceleration(i+1, j);
             yAccel = yAcceleration(i+1, j);
-
-            xPos(nTime+1, N*i+j) = x + dt*xVelo + xAccel*dt^2/2;
-            yPos(nTime+1, N*i+j) = y + dt*yVelo + yAccel*dt^2/2;
+           
+            x = xPos(nTime+1, N*i+j);
+            y = yPos(nTime+1, N*i+j);
 
             if j ~= 1     % left end
-                dx1 = x - xPos(nTime, N*i+j-1);
-                dy1 = y - yPos(nTime, N*i+j-1);
+                dx1 = x - xPos(nTime+1, N*i+j-1);
+                dy1 = y - yPos(nTime+1, N*i+j-1);
                 r1 = sqrt(dx1^2+dy1^2);
                 a1 = -k*(r1-a)/m;
             end
             if j ~= N     % right end
-                dx2 = x - xPos(nTime, N*i+j+1);
-                dy2 = y - yPos(nTime, N*i+j+1);
+                dx2 = x - xPos(nTime+1, N*i+j+1);
+                dy2 = y - yPos(nTime+1, N*i+j+1);
                 r2 = sqrt(dx2^2+dy2^2);
                 a2 = -k*(r2-a)/m;
             end
             if i ~= 0     % up end
-                dx3 = x - xPos(nTime, N*(i-1)+j);
-                dy3 = y - yPos(nTime, N*(i-1)+j);
+                dx3 = x - xPos(nTime+1, N*(i-1)+j);
+                dy3 = y - yPos(nTime+1, N*(i-1)+j);
                 r3 = sqrt(dx3^2+dy3^2);
                 a3 = -k*(r3-a)/m;
             end
             if i ~= N-1   % down end
-                dx4 = x - xPos(nTime, N*(i+1)+j);
-                dy4 = y - yPos(nTime, N*(i+1)+j);
+                dx4 = x - xPos(nTime+1, N*(i+1)+j);
+                dy4 = y - yPos(nTime+1, N*(i+1)+j);
                 r4 = sqrt(dx4^2+dy4^2);
                 a4 = -k*(r4-a)/m;
             end
@@ -140,10 +150,10 @@ for nTime = 1:turn
         end
     end
 
-    %xPos(nTime+1, 1) = xPos(1, 1);     yPos(nTime+1, 1) = yPos(1, 1);
-    %xPos(nTime+1, 10) = xPos(1, 10);   yPos(nTime+1, 10) = yPos(1, 10);
-    %xPos(nTime+1, 91) = xPos(1, 91);   yPos(nTime+1, 91) = yPos(1, 91);
-    %xPos(nTime+1, 100) = xPos(1, 100); yPos(nTime+1, 100) = yPos(1, 100);
+    %xPos(nTime+1, 1) = xPos(1, 1);             yPos(nTime+1, 1) = yPos(1, 1);
+    %xPos(nTime+1, N) = xPos(1, N);             yPos(nTime+1, N) = yPos(1, N);
+    %xPos(nTime+1, N^2-N+1) = xPos(1, N^2-N+1); yPos(nTime+1, N^2-N+1) = yPos(1, N^2-N+1);
+    %xPos(nTime+1, N^2) = xPos(1, N^2);         yPos(nTime+1, N^2) = yPos(1, N^2);
 
     E_kin(nTime+1, :) = m * (sum(xVelocity(nTime+1, :).^2) + sum(yVelocity(nTime+1, :).^2)) / 2;
     E_pot(nTime+1, :) = tempE_pot;
@@ -161,3 +171,9 @@ t = 0:dt:turn*dt;
 E_tot = E_kin + E_pot;
 figure(2)
     plot(t, E_kin, t, E_pot, t, E_tot)
+
+figure(3)
+    subplot(2, 1, 1)
+        plot(t, xMeanPos)
+    subplot(2, 1, 2)
+        plot(t, yMeanPos)
