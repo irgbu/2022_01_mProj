@@ -57,10 +57,10 @@ totTq = 0; % for torque debugging
 for i = 1:N^2
     dx = xPos(1, i) - xMeanPos(1);
     dy = yPos(1, i) - yMeanPos(1);
+    r = sqrt(dx^2 + dy^2);
     if r == 0
         continue
     end
-    r = sqrt(dx^2 + dy^2);
     totTq = totTq + r * (yInitVelo(i)*dx/r - xInitVelo(i)*dy/r);
 end
 
