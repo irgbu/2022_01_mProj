@@ -2,12 +2,12 @@
 % Written by Shin, KiBeom [irgbu1209@yonsei.ac.kr]
 
 m = 39.948;                % Mass of atom         
-N = 5;                    % Number of atom
+N = 3;                     % Number of atom
 k = 0.0509;                % Spring constat                  
 a = 3.822;                 % Distance of atoms                
-dt = 1;                  % Time                             
-T = 600;                   % Tempeture       
-turn = 1000;                        % Calcualated time
+dt = 1;                    % Time                             
+T = 300;                   % Tempeture       
+turn = 10000;                       % Calcualated time
 k_B = 8.617333262*10^(-5);          % Boltzman constant  
 v = sqrt((1-1/N^2) * k_B * T / m);  % Speed     
 
@@ -36,33 +36,28 @@ for i = 1:N^2
     dx = xPos(1, i) - xMeanPos(1);
     dy = yPos(1, i) - yMeanPos(1);
     r = sqrt(dx^2 + dy^2);
-    if r == 0
+    if rem(N, 2) == 1 && i == ceil(N^2/2)
         continue
     end
     totTq = totTq + r *(yInitVelo(i)*dx/r - xInitVelo(i)*dy/r);
 end
-tq = totTq / N^2;
+
+if rem(N, 2) == 0
+    tq = totTq / N^2;
+else
+    tq = totTq / (N^2-1);
+end
+
 for i = 1:N^2
     dx = xPos(1, i) - xMeanPos(1);
     dy = yPos(1, i) - yMeanPos(1);
     r = sqrt(dx^2 + dy^2);
-    if r == 0
+    if rem(N, 2) == 1 && i == ceil(N^2/2)
         continue
     end
     xInitVelo(i) = xInitVelo(i) + tq * dy / r^2;
     yInitVelo(i) = yInitVelo(i) - tq * dx / r^2;
-end
-
-totTq = 0; % for torque debugging
-for i = 1:N^2
-    dx = xPos(1, i) - xMeanPos(1);
-    dy = yPos(1, i) - yMeanPos(1);
-    r = sqrt(dx^2 + dy^2);
-    if r == 0
-        continue
-    end
-    totTq = totTq + r * (yInitVelo(i)*dx/r - xInitVelo(i)*dy/r);
-end
+end   % Set torque 0
 
 xInitVelo = xInitVelo * sqrt((N^2-1)*k_B*T/m) / sqrt(sum(xInitVelo.^2));
 xVelocity = zeros(turn+1, N^2); xVelocity(1, :) = xInitVelo;
@@ -82,8 +77,8 @@ im = {turn};
 % Main
 for nTime = 1:turn
     tempE_pot = 0;
-    for i = 0:N-1      % 10
-        for j = 1:N    %  1
+    for i = 0:N-1   % Update Position
+        for j = 1:N   
             x = xPos(nTime, N*i+j);
             y = yPos(nTime, N*i+j);
 
@@ -96,7 +91,7 @@ for nTime = 1:turn
             yPos(nTime+1, N*i+j) = y + dt*yVelo + yAccel*dt^2/2;
         end
     end
-    for i = 0:N-1
+    for i = 0:N-1   % Update Acceleration
         for j = 1:N
             % 1 - left, 2 - right, 3 - down, 4 - up
             r1 = a; r2 = a; r3 = a; r4 = a;
@@ -150,15 +145,11 @@ for nTime = 1:turn
         end
     end
 
-    %xPos(nTime+1, 1) = xPos(1, 1);             yPos(nTime+1, 1) = yPos(1, 1);
-    %xPos(nTime+1, N) = xPos(1, N);             yPos(nTime+1, N) = yPos(1, N);
-    %xPos(nTime+1, N^2-N+1) = xPos(1, N^2-N+1); yPos(nTime+1, N^2-N+1) = yPos(1, N^2-N+1);
-    %xPos(nTime+1, N^2) = xPos(1, N^2);         yPos(nTime+1, N^2) = yPos(1, N^2);
-
     E_kin(nTime+1, :) = m * (sum(xVelocity(nTime+1, :).^2) + sum(yVelocity(nTime+1, :).^2)) / 2;
     E_pot(nTime+1, :) = tempE_pot;
 
-    scatter(xPos(nTime, :), yPos(nTime, :))
+    s1 = scatter(xPos(nTime, :), yPos(nTime, :), 36, [1 0 0; 0 0 1; 1 0 0; 0 0 1; 0 1 0; 0 0 1; 1 0 0; 0 0 1; 1 0 0], "filled");
+
     drawnow
     frame = getframe(figure(1));
     im{nTime} = frame2im(frame);
@@ -167,13 +158,23 @@ for nTime = 1:turn
     yMeanPos(nTime+1) = mean(yPos(nTime+1, :));
 end
 
+% Visualization
 t = 0:dt:turn*dt;
 E_tot = E_kin + E_pot;
+temperature = 2 * E_kin / (N^2-1) / k_B;
+
 figure(2)
     plot(t, E_kin, t, E_pot, t, E_tot)
+    xlabel('Time(ps)'), ylabel('Energy(eV)')
+    legend('E_{kin}', 'E_{pot}', 'E_{tot}')
 
 figure(3)
     subplot(2, 1, 1)
         plot(t, xMeanPos)
+        xlabel('Time(ps)'), ylabel('Position(Angstrom)')
     subplot(2, 1, 2)
         plot(t, yMeanPos)
+        xlabel('Time(ps)'), ylabel('Position(Angstrom)')
+
+figure(4)
+    plot(t, temperature)
