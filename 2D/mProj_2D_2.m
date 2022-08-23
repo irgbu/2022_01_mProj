@@ -5,7 +5,7 @@ m = 39.948;                % Mass of atom
 N = 3;                     % Number of atom                 
 a = 3.822;                 % Distance of atoms                
 dt = 1;                    % Time                             
-T = 300;                   % Tempeture
+T = 1;                     % Tempeture
 eps = 1.0325 * 10 ^(-2);   %
 sig = 3.405;               %
 turn = 10000;                       % Calcualated time
@@ -184,10 +184,10 @@ figure(4)
 
 
 
-function [pot, force] = LJpotential(dist) % Lennard-Jones Potential
+function [pot,force] = LJpotential(dist) % Lennard-Jones Potential
     global m
     eps = 1.0325 * 10 ^(-2);   %
     sig = 3.405;               %    
     pot = 4 * eps * ((sig/dist)^12 - (sig/dist)^6);
-    force = (-6) * sig^6 * (dist^6 - 2 * sig^6) / dist^13 / m;
+    force = (-6) * sig^6 * (dist^6 - (2 * sig^6)) / dist^13 / m;
 end
