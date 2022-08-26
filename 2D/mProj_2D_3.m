@@ -3,7 +3,7 @@
 
 global m
 m = 39.948;                % Mass of atom         
-N = 3;                     % Number of atom                 
+N = 5;                     % Number of atom                 
 a = 3.822;                 % Distance of atoms                
 dt = 1;                    % Time                             
 T = 1;                     % Tempeture
@@ -19,8 +19,12 @@ xPos = zeros(turn+1, N^2);
 yPos = zeros(turn+1, N^2);
 for i = 0:N-1
     for j = 1:N
-        xPos(1, N*i+j) = a * j;
-        yPos(1, N*i+j) = a * (i+1);
+        if rem(i, 2) == 0
+            xPos(1, i*N+j) = a*j;
+        else
+            xPos(1, i*N+j) = a*j + a/2;
+        end
+        yPos(1, i*N+j) = sqrt(3)/2 * a * (i+1);
     end
 end
 
