@@ -1,6 +1,6 @@
 % MD System with Argon Atom using Lennard-Jones Potential
 % Written by Shin, KiBeom [irgbu1209@yonsei.ac.kr]
-
+global m
 m = 39.948;                % Mass of atom         
 N = 3;                     % Number of atom                 
 a = 3.822;                 % Distance of atoms                
@@ -114,25 +114,25 @@ for nTime = 1:turn
                 dx1 = x - xPos(nTime+1, N*i+j-1);
                 dy1 = y - yPos(nTime+1, N*i+j-1);
                 r1 = sqrt(dx1^2+dy1^2);
-                [E_pot1,a1] = LJpotential(r1);
+                [E_pot1, a1] = LJpotential(r1);
             end
             if j ~= N     % right end
                 dx2 = x - xPos(nTime+1, N*i+j+1);
                 dy2 = y - yPos(nTime+1, N*i+j+1);
                 r2 = sqrt(dx2^2+dy2^2);
-                [E_pot2,a2] = LJpotential(r2);
+                [E_pot2, a2] = LJpotential(r2);
             end
             if i ~= 0     % up end
                 dx3 = x - xPos(nTime+1, N*(i-1)+j);
                 dy3 = y - yPos(nTime+1, N*(i-1)+j);
                 r3 = sqrt(dx3^2+dy3^2);
-                [E_pot3,a3] = LJpotential(r3);
+                [E_pot3, a3] = LJpotential(r3);
             end
             if i ~= N-1   % down end
                 dx4 = x - xPos(nTime+1, N*(i+1)+j);
                 dy4 = y - yPos(nTime+1, N*(i+1)+j);
                 r4 = sqrt(dx4^2+dy4^2);
-                [E_pot4,a4] = LJpotential(r4); 
+                [E_pot4, a4] = LJpotential(r4); 
             end
             
             xAccelCache = dx1/r1*a1 + dx2/r2*a2 + dx3/r3*a3 + dx4/r4*a4;
@@ -184,10 +184,11 @@ figure(4)
 
 
 
-function [pot,force] = LJpotential(dist) % Lennard-Jones Potential
+function [pot, force] = LJpotential(dist) % Lennard-Jones Potential
     global m
     eps = 1.0325 * 10 ^(-2);   %
     sig = 3.405;               %    
     pot = 4 * eps * ((sig/dist)^12 - (sig/dist)^6);
-    force = (-6) * sig^6 * (dist^6 - (2 * sig^6)) / dist^13 / m;
+    disp(dist)
+    force = (-6) * sig^6 * (dist^6 - (2 * sig^6)) / (dist^13 * m);
 end
