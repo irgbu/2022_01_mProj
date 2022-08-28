@@ -3,13 +3,11 @@
 
 global m
 m = 39.948;                % Mass of atom         
-N = 15;                     % Number of atom                 
+N = 5;                     % Number of atom                 
 a = 3.822;                 % Distance of atoms                
 dt = 1;                    % Time                             
-T = 30;                     % Tempeture
-eps = 1.0325 * 10 ^(-2);   %
-sig = 3.405;               %
-runTime = 10000;                       % Calcualated time
+T = 1;                     % Tempeture
+runTime = 1000;                     % Calcualated time
 k_B = 8.617333262*10^(-5);          % Boltzman constant  
 v = sqrt((1-1/N^2) * k_B * T / m);  % Speed 
 
@@ -48,13 +46,17 @@ end
    
     tq = totTq / N^2;
 
+    debugTq = 0;
 for i = 1:N^2
     dx = xPos(1, i) - xMeanPos(1);
     dy = yPos(1, i) - yMeanPos(1);
     r = sqrt(dx^2 + dy^2);
     xInitVelo(i) = xInitVelo(i) + tq * dy / r^2;
     yInitVelo(i) = yInitVelo(i) - tq * dx / r^2;
+    debugTq = debugTq + r*(yInitVelo(i)*dx/r - xInitVelo(i)*dy/r); 
 end   % Set torque 0
+
+
 
 xInitVelo = xInitVelo * sqrt((N^2-1)*k_B*T/m) / sqrt(sum(xInitVelo.^2));
 xVelocity = zeros(runTime+1, N^2); xVelocity(1, :) = xInitVelo;
@@ -116,18 +118,18 @@ for nTime = 1:runTime
             end
             if i ~= N-1   % up end
                 if rem(i, 2) == 0
-                    [dx3, dy3, r3] = distClc(x, y, xPos(nTime+1, turn+N), yPos(nTime+1, turn+N));
-                    [potE3, a3] = LJpotential(r3);
-                    if j ~= N
-                        [dx4, dy4, r4] = distClc(x, y, xPos(nTime+1, turn+N+1), yPos(nTime+1, turn+N+1));
-                        [potE4, a4] = LJpotential(r4);
-                    end
-                else
-                    [dx4, dy4, r4] = distClc(x, y, xPos(nTime+1, turn+N), yPos(nTime+1, turn+N));
+                    [dx4, dy4, r4] = distClc(x, y, xPos(nTime+1, turn+N+1), yPos(nTime+1, turn+N+1));
                     [potE4, a4] = LJpotential(r4);
                     if j ~= 1
-                        [dx3, dy3, r3] = distClc(x, y, xPos(nTime+1, turn+N-1), yPos(nTime+1, turn+N-1));
+                        [dx3, dy3, r3] = distClc(x, y, xPos(nTime+1, turn+N), yPos(nTime+1, turn+N));
                         [potE3, a3] = LJpotential(r3);
+                    end
+                else
+                    [dx3, dy3, r3] = distClc(x, y, xPos(nTime+1, turn+N-1), yPos(nTime+1, turn+N-1));
+                    [potE3, a3] = LJpotential(r3);
+                    if j ~= N
+                        [dx4, dy4, r4] = distClc(x, y, xPos(nTime+1, turn+N), yPos(nTime+1, turn+N));
+                        [potE4, a4] = LJpotential(r4);
                     end
                 end
             end
@@ -152,8 +154,8 @@ for nTime = 1:runTime
             xAccelCache = dx1/r1*a1 + dx2/r2*a2 + dx3/r3*a3 + dx4/r4*a4 + dx5/r5*a5 + dx6/r6*a6;
             yAccelCache = dy1/r1*a1 + dy2/r2*a2 + dy3/r3*a3 + dy4/r4*a4 + dy5/r5*a5 + dy6/r6*a6;
 
-            xVelocity(nTime+1, N*i+j) = xVelo + (xAccel+xAccelCache)*dt/2;
-            yVelocity(nTime+1, N*i+j) = yVelo + (yAccel+yAccelCache)*dt/2;
+            xVelocity(nTime+1, turn) = xVelo + (xAccel+xAccelCache)*dt/2;
+            yVelocity(nTime+1, turn) = yVelo + (yAccel+yAccelCache)*dt/2;
 
             xAcceleration(i+1, j) = xAccelCache;
             yAcceleration(i+1, j) = yAccelCache;
@@ -173,15 +175,16 @@ for nTime = 1:runTime
 
     xMeanPos(nTime+1) = mean(xPos(nTime+1, :));
     yMeanPos(nTime+1) = mean(yPos(nTime+1, :));
+%    disp(nTime)
 end
 
 % Visualization
 t = 0:dt:runTime*dt;
-E_tot = E_kin + E_pot;
+E_tot = E_kin - E_pot;
 temperature = 2 * E_kin / (N^2-1) / k_B;
 
 figure(2)
-    plot(t, E_kin, t, E_pot, t, E_tot)
+    plot(t, E_kin, t, -E_pot, t, E_tot)
     xlabel('Time(ps)'), ylabel('Energy(eV)')
     legend('E_{kin}', 'E_{pot}', 'E_{tot}')
 
@@ -203,12 +206,11 @@ function [pot, force] = LJpotential(dist) % Lennard-Jones Potential
     eps = 1.0325 * 10 ^(-2);   %
     sig = 3.405;               %    
     pot = 4 * eps * ((sig/dist)^12 - (sig/dist)^6);
-    disp(dist)
     force = (-6) * sig^6 * (dist^6 - (2 * sig^6)) / (dist^13 * m);
 end
 
-function [dx, dy, r] = distClc(x, y, x_, y_)
-    dx = x - x_;
-    dy = y - y_;
+function [dx, dy, r] = distClc(x1, y1, x2, y2)
+    dx = x1 - x2;
+    dy = y1 - y2;
     r = sqrt(dx^2  + dy^2);
 end
